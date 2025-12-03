@@ -1,0 +1,16 @@
+opencti:
+  url: 'http://localhost'
+  token: 'ChangeMe'
+
+connector:
+  id: 'ChangeMe'
+  name: 'GreyNoise Vulnerability'
+  scope: 'vulnerability'
+  auto: true # Enable/disable auto-enrichment of observables
+  log_level: 'info'
+
+greynoise-vuln:
+  key: 'ChangeMe'
+  max_tlp: 'TLP:AMBER'
+  name: 'GreyNoise Internet Scanner'
+  description: 'GreyNoise collects and analyzes opportunistic scan and attack activity for devices connected directly to the Internet.'

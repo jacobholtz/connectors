@@ -1,0 +1,13 @@
+opencti:
+  url: 'http://localhost'
+  token: 'ChangeMe'
+
+connector:
+  id: 'ChangeMe'
+  name: 'Microsoft Defender Intel'
+  live_stream_id: 'ChangeMe'
+
+microsoft_defender_intel:
+  tenant_id: 'ChangeMe'
+  client_id: 'ChangeMe' 
+  client_secret: 'ChangeMe'
