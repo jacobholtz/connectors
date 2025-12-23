@@ -1,3 +1,0 @@
-requests
-pycti>=6.6.3
-stix2

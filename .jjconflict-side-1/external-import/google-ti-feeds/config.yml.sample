@@ -1,9 +1,0 @@
-opencti:
-  url: 'http://localhost'
-  token: 'ChangeMe'
-
-connector:
-  id: 'ChangeMe'
-
-gti:
-  api_key: 'ChangeMe'

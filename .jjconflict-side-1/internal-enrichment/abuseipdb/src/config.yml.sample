@@ -1,6 +1,0 @@
-opencti:
-  url: 'http://localhost'
-  token: 'ChangeMe'
-
-abuseipdb:
-  api_key: 'ChangeMe'

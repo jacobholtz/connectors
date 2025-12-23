@@ -1,6 +1,0 @@
-opencti:
-  url: 'http://localhost'
-  token: 'ChangeMe'
-
-sekoia:
-  api_key: 'ChangeMe'

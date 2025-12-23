@@ -1,8 +1,0 @@
-opencti:
-  url: 'http://localhost'
-  token: 'ChangeMe'
-
-# Options available
-# mitre:
-  # remove_statement_marking: false # Optional - default: False
-  # interval: 7 # In days - default: 7
