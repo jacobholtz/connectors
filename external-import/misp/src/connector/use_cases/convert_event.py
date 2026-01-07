@@ -1,11 +1,13 @@
 from copy import deepcopy
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 import pycti
 import stix2
 import stix2.exceptions
 from api_client.models import EventRestSearchListItem, ExtendedAttributeItem
 from connector.threats_guesser import ThreatsGuesser
+from connectors_sdk.models.octi import OrganizationAuthor
 from pydantic import HttpUrl
 
 from .common import TLP_CLEAR, ConverterConfig, ConverterConfigError, ConverterError
@@ -15,6 +17,11 @@ from .convert_galaxy import GalaxyConverter
 from .convert_object import ObjectConverter
 from .convert_tag import TagConverter
 from .utils import find_type_by_uuid
+
+if TYPE_CHECKING:
+    from utils.protocols import LoggerProtocol
+
+LOG_PREFIX = "[EventConverter]"
 
 
 def event_threat_level_to_opencti_score(threat_level: str) -> int:
@@ -58,6 +65,7 @@ class EventConverter:
 
     def __init__(
         self,
+        logger: "LoggerProtocol",
         external_reference_base_url: HttpUrl,
         report_type: str = "misp-event",
         report_description_attribute_filters: dict = {},
@@ -77,6 +85,7 @@ class EventConverter:
         guess_threats_from_tags: bool = False,
         threats_guesser: ThreatsGuesser | None = None,
     ):
+        self.logger = logger
         self.config = ConverterConfig(
             report_type=report_type,
             report_description_attribute_filters=report_description_attribute_filters,
@@ -108,6 +117,26 @@ class EventConverter:
         self.galaxy_converter = GalaxyConverter(self.config)
         self.object_converter = ObjectConverter(self.config, threats_guesser)
         self.tag_converter = TagConverter(self.config, threats_guesser)
+
+        self.organization = self._create_organization()
+
+    def _create_organization(self) -> OrganizationAuthor:
+        """Create the organization identity object.
+
+        Returns:
+            Identity: The organization identity object
+
+        """
+        organization = OrganizationAuthor(
+            name="MISP",
+            description="Import threat intelligence events, indicators, and observables from MISP instances.",
+            contact_information="https://www.misp-project.org",
+            reliability=None,
+            aliases=["MISP"],
+        )
+
+        self.logger.debug("Created organization identity", {"prefix": LOG_PREFIX})
+        return organization
 
     def create_author(self, event: EventRestSearchListItem) -> stix2.Identity:
         if event.Event.Orgc:
@@ -435,10 +464,10 @@ class EventConverter:
                                     ),
                                     relationship_type="related-to",
                                     created_by_ref=event_author["id"],
-                                    description="Original Relationship: "
-                                    + object_reference["relationship_type"]
-                                    + "  \nComment: "
-                                    + object_reference["comment"],
+                                    description=(
+                                        f"Original Relationship: {object_reference['relationship_type']}\n"
+                                        f"Comment: {object_reference['comment']}"
+                                    ),
                                     source_ref=src_result["entity"]["id"],
                                     target_ref=target_result["entity"]["id"],
                                     object_marking_refs=event_markings,
