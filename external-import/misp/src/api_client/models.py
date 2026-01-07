@@ -259,6 +259,7 @@ class MISPBaseModel(BaseModel):
         frozen=True,
         arbitrary_types_allowed=True,
         use_enum_values=True,
+        coerce_numbers_to_str=True,
     )
 
 
