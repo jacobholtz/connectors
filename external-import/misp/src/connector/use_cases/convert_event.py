@@ -1,6 +1,6 @@
 from copy import deepcopy
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterator
 
 import pycti
 import stix2
@@ -197,12 +197,12 @@ class EventConverter:
 
     def process(
         self, event: EventRestSearchListItem, include_relationships: bool = True
-    ) -> list[stix2.v21._STIXBase21]:
+    ) -> Iterator[list[stix2.v21._STIXBase21]]:
         """
         Process an event and convert it to a list of STIX objects.
         :param event: EventRestSearchListItem object
         :param include_relationships: Whether to include relationships between objects
-        :return: List of STIX objects
+        :return: Generator yielding lists of STIX objects (may yield multiple times if bundle exceeds 9999 objects)
         """
         event_author = None
         event_labels = []
@@ -492,13 +492,29 @@ class EventConverter:
                 bundle_objects.append(event_marking)
                 bundled_refs.append(event_marking["id"])
 
+        # Store the base bundle objects to reset the bundle if it exceeds the maximum number of objects
+        base_bundle_objects = deepcopy(bundle_objects)
+
         for stix_object in stix_objects:
             if stix_object["id"] not in bundled_refs:
                 bundle_objects.append(stix_object)
                 bundled_refs.append(stix_object["id"])
+
             if stix_object["id"] not in added_object_refs:
                 object_refs.append(stix_object)
                 added_object_refs.append(stix_object["id"])
+
+            if len(bundle_objects) > 9999:
+                self.logger.warning(
+                    "Reached the maximum number of objects in the bundle in batch => Splitting the bundle",
+                    {
+                        "prefix": LOG_PREFIX,
+                        "bundle_objects_count": len(bundle_objects),
+                    },
+                )
+                yield bundle_objects
+                # Reset the bundle to the base bundle objects
+                bundle_objects = deepcopy(base_bundle_objects)
 
         if self.config.convert_event_to_report:
             try:
@@ -533,4 +549,16 @@ class EventConverter:
                 )
                 bundle_objects.extend(note_stix_objects)
 
-        return bundle_objects
+                if len(bundle_objects) > 9999:
+                    self.logger.warning(
+                        "Reached the maximum number of objects in the bundle in batch => Splitting the bundle",
+                        {
+                            "prefix": LOG_PREFIX,
+                            "bundle_objects_count": len(bundle_objects),
+                        },
+                    )
+                    yield bundle_objects
+                    # Reset the bundle to the base bundle objects
+                    bundle_objects = deepcopy(base_bundle_objects)
+
+        yield bundle_objects

@@ -182,7 +182,7 @@ class OrchestratorEvent(BaseOrchestrator):
             )
         else:
             last_event_date = self.config.import_from_date or now
-            self.logger.info("Connector has never run")
+            self.logger.info("Connector has never run", {"prefix": LOG_PREFIX})
 
         next_event_date = last_event_date + timedelta(seconds=1)
         self.logger.info(
@@ -225,7 +225,7 @@ class OrchestratorEvent(BaseOrchestrator):
                     },
                 )
 
-                bundle_objects = self.converter.process(
+                bundle_generator = self.converter.process(
                     event=event,
                     include_relationships=(
                         len(event.Event.Attribute or []) + len(event.Event.Object or [])
@@ -234,14 +234,18 @@ class OrchestratorEvent(BaseOrchestrator):
                     < 10000,
                 )
 
-                self._log_entities_summary(bundle_objects, 0, 1)
+                # Process all bundles from the generator (can yield multiple times if bundle > 9999 objects)
+                for bundle_objects in bundle_generator:
+                    self._log_entities_summary(bundle_objects, 0, 1)
 
-                self._check_batch_size_and_flush(self.batch_processor, bundle_objects)
-                self._add_entities_to_batch(
-                    self.batch_processor,
-                    bundle_objects,
-                    self.converter,
-                )
+                    self._check_batch_size_and_flush(
+                        self.batch_processor, bundle_objects
+                    )
+                    self._add_entities_to_batch(
+                        self.batch_processor,
+                        bundle_objects,
+                        self.converter,
+                    )
 
         finally:
             self._flush_batch_processor()

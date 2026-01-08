@@ -104,7 +104,7 @@ class BaseOrchestrator:
 
     def _check_batch_size_and_flush(
         self,
-        batch_processor: Any,
+        batch_processor: "GenericBatchProcessor",
         all_entities: list[Any],
     ) -> None:
         """Check if batch needs to be flushed and flush if necessary.
@@ -137,6 +137,6 @@ class BaseOrchestrator:
             converter: The converter instance to use for organization and tlp_marking
 
         """
-        batch_processor.add_item(converter.organization)
+        # batch_processor.add_item(converter.organization)
         # batch_processor.add_item(converter.tlp_marking)
         batch_processor.add_items(all_entities)
