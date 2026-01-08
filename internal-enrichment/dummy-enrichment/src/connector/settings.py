@@ -51,13 +51,14 @@ class TotoConfig(BaseConfigModel):
     image: str = Field(description="image")
     movie: str = Field(description="movie")
     useless: DeprecatedVariable
-    mamama: DeprecatedVariable = LegacyField(new_variable_name="momomo")
+    mamama: DeprecatedVariable = LegacyField(
+        new_variable_name="momomo", description="Use momomo"
+    )
     momomo: str = Field(description="momomo")
     interval: DeprecatedVariable = LegacyField(
         deprecated="Use connector.duration_period instead",
         new_variable_name="duration_period",
         new_namespace="connector",
-        change_value=lambda x: int(x) * 60,
     )
 
 

@@ -99,8 +99,8 @@ def LegacyField(
     deprecated: str | bool = True,
     new_namespace: str | None = None,
     new_variable_name: str | None = None,
-    change_value: Callable | None = None,
     set_to_empty_dict: bool = False,
+    description: str = "This field is deprecated.",
 ) -> FieldInfo:
     """Define a deprecated field with migration information.
     The migration information is used in the BaseConnectorSettings to automatically
@@ -118,9 +118,9 @@ def LegacyField(
         default=None,
         new_namespace=new_namespace,
         new_variable_name=new_variable_name,
-        change_value=change_value,
         deprecated=deprecated,
         set_to_empty_dict=set_to_empty_dict,
+        description=description,
     )
 
 
